@@ -2,6 +2,7 @@ import { realTime, firestore } from "./database";
 import * as express from "express";
 import { nanoid } from "nanoid";
 import * as cors from "cors";
+import * as path from "path/posix";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -121,9 +122,7 @@ app.post("/rooms/:roomId/online", (req, res) => {
 
 app.use(express.static("../dist"));
 app.get("*", (req, res) => {
-  const dir = __dirname;
-  const newDir = dir.replace("server", "dist");
-  res.sendFile(newDir + "\\index.html");
+  res.sendFile(path.join(__dirname + "../dist/index.html"));
 });
 
 app.listen(port, () => {
