@@ -28,9 +28,6 @@
     "build": "yarn build:front && yarn build:api",
     "start": "node ./server/index.js"
   },
-  "engines": {
-    "node": "14.16.0"
-  },
   "devDependencies": {
     "@parcel/transformer-image": "2.0.0-rc.0"
   }
