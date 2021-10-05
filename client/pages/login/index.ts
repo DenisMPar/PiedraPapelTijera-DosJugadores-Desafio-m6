@@ -1,21 +1,42 @@
 import { Router } from "@vaadin/router";
+import { state } from "../../state";
 
 customElements.define(
-  "join-room-page",
-  class Join extends HTMLElement {
+  "login-page",
+  class Login extends HTMLElement {
     shadow = this.attachShadow({ mode: "open" });
-    roomId: string;
+    joinRoom: boolean;
     connectedCallback() {
+      const currentState = state.getState();
+      this.joinRoom = currentState.joinRoom;
       this.render();
+      this.addRoutes();
+    }
+    //agrega el redireccionamiento de acuerdo al estado de joinroom, para saber si
+    //crear una nueva sala o unirse a una existente
+    addRoutes() {
       const formEl = this.shadow.querySelector(".main__form");
       const shadowFormEl = formEl.shadowRoot.querySelector("form");
 
-      shadowFormEl.addEventListener("submit", (e) => {
-        e.preventDefault();
-
-        Router.go("/login");
-      });
+      if (this.joinRoom) {
+        shadowFormEl.addEventListener("submit", (e) => {
+          e.preventDefault();
+          const target = e.target as any;
+          state.setPlayerName(target.input.value);
+          state.createUser();
+          Router.go("/join-room");
+        });
+      } else {
+        shadowFormEl.addEventListener("submit", (e) => {
+          e.preventDefault();
+          const target = e.target as any;
+          state.setPlayerName(target.input.value);
+          state.createUser(state.createAndJoinRoom);
+          Router.go("/room-code");
+        });
+      }
     }
+
     render() {
       const containerEl = document.createElement("div");
 
@@ -27,7 +48,7 @@ customElements.define(
       <my-text type = "title" class="main__title">Piedra Papel o Tijera</my-text>
       </div>
       <div class = "main__container-form">
-      <my-form label="Código de la sala:" button="unirse" class="main__form"></my-form>
+      <my-form label="Tu nombre:" button="empezar" class="main__form"></my-form>
       </div>
       </main>
       <my-footer class = "footer"></my-footer>

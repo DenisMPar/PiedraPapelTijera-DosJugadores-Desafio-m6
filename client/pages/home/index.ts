@@ -1,4 +1,5 @@
 import { Router } from "@vaadin/router";
+import { state } from "../../state";
 
 customElements.define(
   "home-page",
@@ -18,7 +19,10 @@ customElements.define(
       );
       joinGameButtonEl.addEventListener("click", (e) => {
         e.preventDefault();
-        Router.go("/join-room");
+        const currentState = state.getState();
+        currentState.joinRoom = true;
+        state.setState(currentState);
+        Router.go("/login");
       });
     }
     render() {

@@ -75,7 +75,7 @@ customElements.define(
           Router.go("/result-win");
         }
         if (winner == 2) {
-          Router.go("/game");
+          Router.go("/lobby");
         }
       }, 1600);
     }

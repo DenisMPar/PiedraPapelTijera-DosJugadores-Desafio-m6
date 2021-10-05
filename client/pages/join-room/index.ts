@@ -1,29 +1,25 @@
 import { Router } from "@vaadin/router";
+import { state } from "../../state";
 
 customElements.define(
-  "login-page",
-  class Login extends HTMLElement {
+  "join-room-page",
+  class Join extends HTMLElement {
     shadow = this.attachShadow({ mode: "open" });
     roomId: string;
     connectedCallback() {
       this.render();
+      const currentState = state.getState();
       const formEl = this.shadow.querySelector(".main__form");
       const shadowFormEl = formEl.shadowRoot.querySelector("form");
-      // this.roomId = "ha582";
 
-      if (this.roomId) {
-        shadowFormEl.addEventListener("submit", (e) => {
-          e.preventDefault();
-
-          Router.go("/lobby");
-        });
-      } else {
-        shadowFormEl.addEventListener("submit", (e) => {
-          e.preventDefault();
-
-          Router.go("/room-code");
-        });
-      }
+      shadowFormEl.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const target = e.target as any;
+        currentState.roomId = target.input.value;
+        state.setState(currentState);
+        state.joinRoom();
+        Router.go("/lobby");
+      });
     }
     render() {
       const containerEl = document.createElement("div");
@@ -36,7 +32,7 @@ customElements.define(
       <my-text type = "title" class="main__title">Piedra Papel o Tijera</my-text>
       </div>
       <div class = "main__container-form">
-      <my-form label="Tu nombre:" button="empezar" class="main__form"></my-form>
+      <my-form label="Código de la sala:" button="unirse" class="main__form"></my-form>
       </div>
       </main>
       <my-footer class = "footer"></my-footer>

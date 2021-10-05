@@ -27,7 +27,7 @@ customElements.define(
       <label class="label">
       ${this.label}
       </label>
-      <input type="text" placeholder="${this.input}" class="input">
+      <input type="text" placeholder="${this.input}" class="input" name="input">
       </div>
       <button class="button">${this.button}</button>
       `;
