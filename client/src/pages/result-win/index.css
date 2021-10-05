@@ -1,0 +1,34 @@
+.main {
+  height: 100vh;
+  margin: 0 auto;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+}
+.result__container-result {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.result__container-result,
+.result__container-score {
+  font-size: 40px;
+  margin-bottom: 40px;
+  place-self: center;
+}
+
+.result-win__background {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: -1;
+  background-color: #888949;
+  opacity: 80%;
+}
+
+.result__container-button {
+  width: 100%;
+  margin: 0 auto;
+}

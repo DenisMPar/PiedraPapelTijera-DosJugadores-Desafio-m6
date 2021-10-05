@@ -1,0 +1,10 @@
+.text {
+  font-family: inherit;
+  font-size: inherit;
+  margin: 0;
+}
+.title {
+  margin: 0;
+  font-size: inherit;
+  color: #009048;
+}

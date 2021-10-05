@@ -1,0 +1,8 @@
+//tsconfig basico para usar la libreria firebase
+{
+    "compilerOptions": {
+      "target": "esnext",
+      "moduleResolution": "node",
+      "resolveJsonModule": true
+    }
+  }

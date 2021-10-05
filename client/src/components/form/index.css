@@ -1,0 +1,46 @@
+* {
+  box-sizing: border-box;
+}
+
+.form {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.form__container-input {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  width: 100%;
+  height: 100%;
+  font-family: inherit;
+  font-size: 35px;
+  text-align: center;
+}
+
+.input {
+  width: 100%;
+  background: #ffffff;
+  border: 10px solid #182460;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 45px;
+  text-align: center;
+}
+
+.button {
+  font-family: inherit;
+  font-size: 45px;
+  width: 100%;
+  height: 100%;
+  background-color: #006cfc;
+  border: 10px solid #001997;
+  border-radius: 10px;
+  color: white;
+}

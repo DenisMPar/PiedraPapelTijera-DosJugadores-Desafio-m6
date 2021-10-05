@@ -1,0 +1,26 @@
+* {
+  box-sizing: border-box;
+}
+.page-container {
+  height: 100vh;
+  padding: 27px 27px 0px 27px;
+  max-width: 350px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.main__container-title {
+  font-size: 75px;
+}
+.main__title {
+  text-align: center;
+}
+.footer {
+  height: 105px;
+}

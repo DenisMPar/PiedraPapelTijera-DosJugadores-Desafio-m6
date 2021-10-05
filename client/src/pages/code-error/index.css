@@ -1,0 +1,26 @@
+* {
+  box-sizing: border-box;
+}
+.main {
+  height: 100vh;
+  padding: 27px 27px 0px 27px;
+  max-width: 350px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.main__container-title {
+  font-size: 75px;
+}
+.main__title {
+  text-align: center;
+}
+.main__text {
+  font-size: 35px;
+  text-align: center;
+}
+.main__container-icons {
+  display: flex;
+  justify-content: space-between;
+}

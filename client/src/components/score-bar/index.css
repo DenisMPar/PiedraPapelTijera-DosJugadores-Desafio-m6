@@ -1,0 +1,18 @@
+.score-bar {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+.room-data__container-score .room-data__container-room-code {
+  display: flex;
+  flex-direction: column;
+}
+
+.room-code__room {
+  text-align: right;
+}
+
+.score__player-two {
+  color: #ff6442;
+}

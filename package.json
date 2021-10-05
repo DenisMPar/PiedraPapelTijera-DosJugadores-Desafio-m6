@@ -1,0 +1,19 @@
+{
+  "name": "desafio-m6",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@types/node": "^16.10.2",
+    "@vaadin/router": "^1.7.4",
+    "animate.css": "^4.1.1",
+    "parcel": "^2.0.0-rc.0",
+    "typescript": "^4.4.3"
+  },
+  "scripts": {
+    "dev": "parcel serve ./client/src/index.html"
+  },
+  "devDependencies": {
+    "@parcel/transformer-image": "2.0.0-rc.0"
+  }
+}
