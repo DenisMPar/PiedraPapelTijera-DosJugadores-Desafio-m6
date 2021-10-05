@@ -120,7 +120,7 @@ app.post("/rooms/:roomId/online", (req, res) => {
     });
 });
 
-app.use(express.static("/dist"));
+app.use(express.static("dist"));
 app.get("*", (req, res) => {
   res.sendFile(__dirname + "/dist/index.html");
 });
