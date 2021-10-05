@@ -115,7 +115,9 @@ app.post("/rooms/:roomId/online", function (req, res) {
 });
 app.use(express.static("../dist"));
 app.get("*", function (req, res) {
-    res.sendFile(__dirname + "/dist/index.html");
+    var dir = __dirname;
+    var newDir = dir.replace("server", "dist");
+    res.send(newDir);
 });
 app.listen(port, function () {
     console.log("Example app listening at http://localhost:" + port);

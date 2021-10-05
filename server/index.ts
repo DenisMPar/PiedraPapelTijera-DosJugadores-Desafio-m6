@@ -123,7 +123,7 @@ app.use(express.static("../dist"));
 app.get("*", (req, res) => {
   const dir = __dirname;
   const newDir = dir.replace("server", "dist");
-  res.sendFile(newDir + "/index.html");
+  res.sendFile(newDir + "\\index.html");
 });
 
 app.listen(port, () => {
