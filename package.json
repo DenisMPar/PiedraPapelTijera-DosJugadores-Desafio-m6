@@ -1,7 +1,6 @@
 {
   "name": "desafio-m6",
   "version": "1.0.0",
-  "main": "index.js",
   "license": "MIT",
   "dependencies": {
     "@vaadin/router": "^1.7.4",
@@ -25,7 +24,7 @@
     "dev:api": "nodemon --watch ./server/index.ts --exec ts-node ./server/index.ts",
     "build:front": "parcel build ./client/index.html",
     "test": "ava",
-    "build:api": "tsc ./server/index.ts ./server/index.js",
+    "build:api": "tsc ./server/index.ts",
     "build": "yarn build:front && yarn build:api",
     "start": "node ./server/index.js"
   },
