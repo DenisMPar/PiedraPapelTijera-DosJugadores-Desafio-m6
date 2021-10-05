@@ -1,5 +1,5 @@
 import firebase from "firebase";
-const API_BASE_URL = "https://piedra-papel-tijera-app.herokuapp.com/";
+const API_BASE_URL = "https://piedra-papel-tijera-app.herokuapp.com";
 
 const app = firebase.initializeApp({
   apiKey: process.env.API_KEY_RTDB,
