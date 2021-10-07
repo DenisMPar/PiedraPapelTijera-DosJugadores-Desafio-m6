@@ -1,23 +1,59 @@
+import { Router } from "@vaadin/router";
+import { state } from "../../state";
+
 customElements.define(
   "lobby-page",
   class Lobby extends HTMLElement {
     shadow = this.attachShadow({ mode: "open" });
-    playerTwoName: string = "denis";
+    playerTwoName: string = "player";
     playerTwoReady: boolean = false;
+    check: boolean = false;
+    gameData;
     connectedCallback() {
       this.render();
+      state.subscribe(() => {
+        const currentState = state.getState();
+        this.gameData = currentState.gameData;
+        this.getPlayerTwoName();
+        this.checkPlayerReady();
+        this.render();
+      });
       const buttonEl = this.shadow.querySelector(".main__new-game-button");
-
       buttonEl.addEventListener("click", (e) => {
         e.preventDefault();
-        const mainEl = this.shadow.querySelector(".main");
-        mainEl.innerHTML = `
-        <my-text type = "text" class="main__text">Esperando a que ${this.playerTwoName} presione jugar
-       </my-text>
-        `;
+        state.setPlayerReady();
+        this.check = true;
+        if (!this.playerTwoReady) {
+          const mainEl = this.shadow.querySelector(".main");
+          mainEl.innerHTML = `
+          <my-text type = "text" class="main__text">Esperando a que ${this.playerTwoName} presione jugar
+          </my-text>
+          `;
+        } else {
+          Router.go("/game");
+        }
       });
     }
-    showWaitText() {}
+    getPlayerTwoName() {
+      if (this.gameData.playerTwo) {
+        const playerTwoData = this.gameData.playerTwo;
+        if (playerTwoData.playerName) {
+          this.playerTwoName = playerTwoData.playerName;
+        }
+      }
+    }
+    checkPlayerReady() {
+      if (this.gameData.playerTwo) {
+        const playerTwoData = this.gameData.playerTwo;
+        if (playerTwoData.ready) {
+          this.playerTwoReady = playerTwoData.ready;
+          if (this.check) {
+            Router.go("/game");
+          }
+        }
+      }
+    }
+
     render() {
       const containerEl = document.createElement("div");
       containerEl.classList.add("page-container");

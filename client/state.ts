@@ -1,5 +1,7 @@
 import { join } from "path/posix";
-import { API_BASE_URL } from "./front-database";
+import { callbackify } from "util";
+import { API_BASE_URL, rtdb } from "./front-database";
+import map from "lodash/map";
 
 type Jugada = "piedra" | "papel" | "tijera";
 const state = {
@@ -8,6 +10,7 @@ const state = {
       myMove: "",
       playerTwoMove: "tijera",
     },
+    gameData: {},
     playerName: "",
   },
   listeners: [],
@@ -18,13 +21,10 @@ const state = {
     console.log("soy el state he cambiado: ", newState);
     this.data = newState;
     for (const cb of this.listeners) {
-      console.log("se ejecvuto el listener");
-
       cb();
     }
   },
   subscribe(callback: (any) => any) {
-    console.log("soy el subscirbe");
     this.listeners.push(callback);
   },
   setMove(move: Jugada) {
@@ -78,7 +78,7 @@ const state = {
         }
       });
   },
-  createAndJoinRoom() {
+  createAndJoinRoom(callback?) {
     const currentState = state.getState();
 
     fetch(API_BASE_URL + "/rooms", {
@@ -97,11 +97,10 @@ const state = {
         currentState.roomId = data.id;
         state.setState(currentState);
         state.joinRoom();
+        state.setPlayerOnline();
       });
   },
   joinRoom() {
-    console.log("join room");
-
     const currentState = state.getState();
     fetch(
       API_BASE_URL +
@@ -116,8 +115,80 @@ const state = {
       .then((data) => {
         currentState.realTimeId = data.realTimeId;
         state.setState(currentState);
-
         console.log("me uni al room: " + data.realTimeId);
+        state.listenToRoom();
+      });
+  },
+  setPlayerOnline() {
+    const currentState = state.getState();
+
+    fetch(API_BASE_URL + "/rooms/" + currentState.roomId + "/online", {
+      method: "post",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        playerName: currentState.playerName,
+        userId: currentState.userId,
+      }),
+    })
+      .then((data) => {
+        return data.json();
+      })
+      .then((data) => {
+        console.log(data);
+      });
+  },
+  listenToRoom() {
+    const currentState = this.getState();
+
+    if (currentState.realTimeId) {
+      const chatRoomRef = rtdb.ref(
+        "/rooms/" + currentState.realTimeId + "/currentGame"
+      );
+
+      chatRoomRef.on("value", (snap) => {
+        if (snap.val()) {
+          const gameData = snap.val();
+          this.setGameData(gameData);
+        }
+      });
+    } else {
+      console.error("no se encontro el room");
+    }
+  },
+  setGameData(gameData) {
+    const currentState = state.getState();
+    const gameDataMapped = map(gameData);
+    for (const player of gameDataMapped) {
+      if (player.userId == currentState.userId) {
+        currentState.gameData.playerOne = player;
+      } else {
+        currentState.gameData.playerTwo = player;
+      }
+    }
+    console.log("nueva data de juego ", currentState.gameData);
+
+    state.setState(currentState);
+  },
+  setPlayerReady() {
+    const currentState = state.getState();
+
+    fetch(API_BASE_URL + "/rooms/" + currentState.roomId + "/ready", {
+      method: "post",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        roomId: currentState.roomId,
+        userId: currentState.userId,
+      }),
+    })
+      .then((data) => {
+        return data.json();
+      })
+      .then((data) => {
+        console.log(data);
       });
   },
 };

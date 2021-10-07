@@ -3,6 +3,7 @@ import * as express from "express";
 import { nanoid } from "nanoid";
 import * as cors from "cors";
 import * as path from "path";
+import * as map from "lodash/map";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -59,8 +60,8 @@ app.post("/rooms", (req, res) => {
               });
           });
       } else {
-        res.status(401).json({
-          message: "user doesnt exist",
+        res.status(404).json({
+          message: "user doesn't exist",
         });
       }
     });
@@ -82,7 +83,9 @@ app.get("/rooms/:id", (req, res) => {
             res.json(snap.data());
           });
       } else {
-        res.send("usuario no valido");
+        res.status(404).json({
+          message: "user doesn't exist",
+        });
       }
     });
 });
@@ -90,7 +93,7 @@ app.get("/rooms/:id", (req, res) => {
 //setea el estado online de un player
 app.post("/rooms/:roomId/online", (req, res) => {
   const { roomId } = req.params;
-  const { userName } = req.body;
+  const { playerName } = req.body;
   const { userId } = req.body;
 
   usersCollection
@@ -104,17 +107,61 @@ app.post("/rooms/:roomId/online", (req, res) => {
           .then((snap) => {
             const rtdbRoomId = snap.data().realTimeId;
             const room = realTime.ref(
-              "rooms/" + rtdbRoomId + "/currentGame/" + userName + "/online"
+              "rooms/" + rtdbRoomId + "/currentGame/" + userId
             );
-            room.set(true).then(() => {
-              res.json({
-                message: "player online",
+            room
+              .set({
+                online: true,
+                userId: userId,
+                playerName: playerName,
+              })
+              .then(() => {
+                res.json({
+                  message: "player online",
+                });
               });
-            });
           });
       } else {
         res.status(404).json({
-          message: "usuario no valido",
+          message: "user doesn't exist",
+        });
+      }
+    });
+});
+
+//setea el estado de listo de un jugador
+app.post("/rooms/:roomId/ready", (req, res) => {
+  const { roomId } = req.params;
+  const { userId } = req.body;
+  usersCollection
+    .doc(userId.toString())
+    .get()
+    .then((snap) => {
+      if (snap.exists) {
+        roomsCollection
+          .doc(roomId)
+          .get()
+          .then((snap) => {
+            const rtdbRoomId = snap.data().realTimeId;
+            const room = realTime.ref(
+              "rooms/" + rtdbRoomId + "/currentGame/" + userId
+            );
+            room
+              .get()
+              .then((snap) => {
+                return snap.val();
+              })
+              .then((data) => {
+                room.set({ ...data, ready: true }).then(() => {
+                  res.json({
+                    message: "player ready",
+                  });
+                });
+              });
+          });
+      } else {
+        res.status(404).json({
+          message: "user doesn't exist",
         });
       }
     });

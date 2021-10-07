@@ -18,6 +18,7 @@ customElements.define(
         currentState.roomId = target.input.value;
         state.setState(currentState);
         state.joinRoom();
+        state.setPlayerOnline();
         Router.go("/lobby");
       });
     }

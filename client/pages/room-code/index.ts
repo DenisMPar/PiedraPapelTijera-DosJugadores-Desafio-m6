@@ -1,3 +1,4 @@
+import { Router } from "@vaadin/router";
 import { state } from "../../state";
 
 customElements.define(
@@ -5,14 +6,26 @@ customElements.define(
   class RoomCode extends HTMLElement {
     shadow = this.attachShadow({ mode: "open" });
     roomId: number;
+    gameData;
     connectedCallback() {
       this.render();
       state.subscribe(() => {
         const currentState = state.getState();
         this.roomId = currentState.roomId;
+        this.gameData = currentState.gameData;
         this.showRoomId();
+        this.playerTwoOnline();
       });
     }
+    playerTwoOnline() {
+      if (this.gameData.playerTwo) {
+        const playerTwoData = this.gameData.playerTwo;
+        if (playerTwoData.online) {
+          Router.go("/lobby");
+        }
+      }
+    }
+
     showRoomId() {
       const containerRoomIdEl = this.shadow.querySelector(
         ".main__container-room-id"

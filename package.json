@@ -21,7 +21,7 @@
   },
   "scripts": {
     "dev:front": "parcel serve ./client/index.html",
-    "dev:api": "nodemon --watch ./server/index.ts --exec ts-node ./server/index.ts",
+    "dev:api": "nodemon --watch ./server/index.ts --exec ts-node dev.ts",
     "build:front": "parcel build ./client/index.html",
     "test": "ava",
     "build:api": "tsc ./server/index.ts",
