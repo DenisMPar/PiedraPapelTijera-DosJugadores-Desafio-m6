@@ -133,6 +133,7 @@ app.post("/rooms/:roomId/online", (req, res) => {
 app.post("/rooms/:roomId/ready", (req, res) => {
   const { roomId } = req.params;
   const { userId } = req.body;
+  const { ready } = req.body;
   usersCollection
     .doc(userId.toString())
     .get()
@@ -152,12 +153,96 @@ app.post("/rooms/:roomId/ready", (req, res) => {
                 return snap.val();
               })
               .then((data) => {
-                room.set({ ...data, ready: true }).then(() => {
+                room.set({ ...data, ready }).then(() => {
                   res.json({
                     message: "player ready",
                   });
                 });
               });
+          });
+      } else {
+        res.status(404).json({
+          message: "user doesn't exist",
+        });
+      }
+    });
+});
+
+app.post("/rooms/:roomId/move", (req, res) => {
+  const { roomId } = req.params;
+  const { userId } = req.body;
+  const { playerMove } = req.body;
+  usersCollection
+    .doc(userId.toString())
+    .get()
+    .then((snap) => {
+      if (snap.exists) {
+        roomsCollection
+          .doc(roomId)
+          .get()
+          .then((snap) => {
+            const rtdbRoomId = snap.data().realTimeId;
+            const room = realTime.ref(
+              "rooms/" + rtdbRoomId + "/currentGame/" + userId
+            );
+            room
+              .get()
+              .then((snap) => {
+                return snap.val();
+              })
+              .then((data) => {
+                room.set({ ...data, playerMove }).then(() => {
+                  res.json({
+                    message: "player moved",
+                  });
+                });
+              });
+          });
+      } else {
+        res.status(404).json({
+          message: "user doesn't exist",
+        });
+      }
+    });
+});
+app.post("/rooms/:roomId/reset", (req, res) => {
+  const { roomId } = req.params;
+  const { userId } = req.body;
+  usersCollection
+    .doc(userId.toString())
+    .get()
+    .then((snap) => {
+      if (snap.exists) {
+        roomsCollection
+          .doc(roomId)
+          .get()
+          .then((snap) => {
+            const rtdbRoomId = snap.data().realTimeId;
+            const room = realTime.ref(
+              "rooms/" + rtdbRoomId + "/currentGame/" + userId + "/ready"
+            );
+            room.remove().then(() => {
+              const room = realTime.ref(
+                "rooms/" + rtdbRoomId + "/currentGame/" + userId + "/playerMove"
+              );
+              room.remove().then(() => {
+                res.json({
+                  message: "removed",
+                });
+              });
+            });
+            // room
+            //   .get()
+            //   .then((snap) => {
+            //     return snap.val();
+            //   })
+            //   .then((data) => {
+            //     room.set({ ...data, playerMove }).then(() => {
+            //       res.json({
+            //         message: "player moved",
+            //       });
+            //     });
+            //   });
           });
       } else {
         res.status(404).json({

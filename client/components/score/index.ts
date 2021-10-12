@@ -3,13 +3,17 @@ customElements.define(
   class Score extends HTMLElement {
     shadow: ShadowRoot;
 
-    playerScore: string;
-    computerScore: string;
+    playerOneScore;
+    playerTwoScore;
+    playerOneName;
+    playerTwoName;
     constructor() {
       super();
       this.shadow = this.attachShadow({ mode: "open" });
-      this.playerScore = this.getAttribute("player");
-      this.computerScore = this.getAttribute("computer");
+      this.playerOneScore = this.getAttribute("playerOne");
+      this.playerTwoScore = this.getAttribute("playerTwo");
+      this.playerOneName = this.getAttribute("playerOneName");
+      this.playerTwoName = this.getAttribute("playerTwoName");
     }
     connectedCallback() {
       this.render();
@@ -20,8 +24,8 @@ customElements.define(
       scoreEl.innerHTML = `
         <h4 class="title">Score</h4>
         <div>
-        <span class="result">Vos: ${this.playerScore}</span>
-        <span class="result">Máquina: ${this.computerScore}</span>
+        <span class="result">${this.playerOneName}: ${this.playerOneScore}</span>
+        <span class="result">${this.playerTwoName}: ${this.playerTwoScore}</span>
         </div>
         `;
       const styles = require("url:./index.css");

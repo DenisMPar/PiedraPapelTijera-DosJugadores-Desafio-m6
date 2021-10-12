@@ -7,9 +7,12 @@ customElements.define(
     shadow = this.attachShadow({ mode: "open" });
     playerTwoName: string = "player";
     playerTwoReady: boolean = false;
-    check: boolean = false;
+    check: boolean;
     gameData;
     connectedCallback() {
+      const currentState = state.getState();
+      this.gameData = currentState.gameData;
+      this.check = false;
       this.render();
       state.subscribe(() => {
         const currentState = state.getState();
@@ -21,24 +24,28 @@ customElements.define(
       const buttonEl = this.shadow.querySelector(".main__new-game-button");
       buttonEl.addEventListener("click", (e) => {
         e.preventDefault();
-        state.setPlayerReady();
+        state.setPlayerReady(true);
         this.check = true;
-        if (!this.playerTwoReady) {
-          const mainEl = this.shadow.querySelector(".main");
-          mainEl.innerHTML = `
-          <my-text type = "text" class="main__text">Esperando a que ${this.playerTwoName} presione jugar
-          </my-text>
-          `;
-        } else {
+        if (this.playerTwoReady) {
           Router.go("/game");
+          this.check = false;
         }
       });
     }
     getPlayerTwoName() {
-      if (this.gameData.playerTwo) {
-        const playerTwoData = this.gameData.playerTwo;
-        if (playerTwoData.playerName) {
-          this.playerTwoName = playerTwoData.playerName;
+      if (this.gameData) {
+        if (this.gameData.playerTwo) {
+          const playerTwoData = this.gameData.playerTwo;
+          if (playerTwoData.playerName) {
+            this.playerTwoName = playerTwoData.playerName;
+            if (this.check) {
+              const mainEl = this.shadow.querySelector(".main");
+              mainEl.innerHTML = `
+              <my-text type = "text" class="main__text">Esperando a que ${this.playerTwoName} presione jugar
+              </my-text>
+              `;
+            }
+          }
         }
       }
     }
@@ -48,7 +55,9 @@ customElements.define(
         if (playerTwoData.ready) {
           this.playerTwoReady = playerTwoData.ready;
           if (this.check) {
+            console.log("checked");
             Router.go("/game");
+            this.check = false;
           }
         }
       }
@@ -62,7 +71,7 @@ customElements.define(
       <main class="main">
       <div class = "main__container-text">
       <my-text type = "text" class="main__text">Presioná jugar
-      y elegí: piedra, papel o tijera antes de que pasen los 3 segundos.
+      y elegí: piedra, papel o tijera antes de que pasen los 3 segundos o perderás el juego.
       </my-text>
       </div>
       <div class = "main__container-button">

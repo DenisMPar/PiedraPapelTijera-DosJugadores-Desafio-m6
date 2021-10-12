@@ -1,14 +1,37 @@
 import { Router } from "@vaadin/router";
+import { stat } from "fs";
 import { state } from "../../state";
+type Jugada = "piedra" | "papel" | "tijera";
 
 customElements.define(
   "game-page",
   class Game extends HTMLElement {
     shadow = this.attachShadow({ mode: "open" });
+    check: boolean = false;
+    gameData;
+
     connectedCallback() {
       this.render();
       this.setClock();
-      this.setPlayerMove();
+      this.setMove();
+      state.subscribe(() => {
+        const currentState = state.getState();
+        this.gameData = currentState.gameData;
+        // if (this.gameData.playerOne && this.gameData.playerTwo) {
+        //   if (
+        //     this.gameData.playerOne.playerMove &&
+        //     this.gameData.playerTwo.playerMove
+        //   ) {
+        //     if (this.gameData.playerTwo.playerMove == "nada") {
+        //       console.log("resultadooo");
+        //       Router.go("result-win");
+        //     } else {
+        //       console.log("show plays");
+        //       this.showPlays();
+        //     }
+        //   }
+        // }
+      });
     }
     setClock() {
       //Crea un intervalo de cuenta regresiva desde 3 a 1
@@ -29,41 +52,56 @@ customElements.define(
         //cancela el intervalo e imprime la pantalla timeout
         if (contador < 0) {
           window.clearInterval(intervalId);
+          if (this.check == false) {
+            console.log("voy a lose");
+
+            state.setPlayerMove("nada");
+            Router.go("/result-lose");
+          }
+          this.showPlays();
         }
       }, 1000);
     }
-    setPlayerMove() {
+    setMove() {
       //agrega el evento click a las posibles jugadas
       //El evento guarda las jugadas en el state con el metodo setgame
       //tiene un settimeout para se alcance a ver el cambio de estilo de la jugada elegida
       //cambia el estado de click para evitar la pagina de timeout
       const playsEls = this.shadow.querySelectorAll(".game__container-play");
+
       for (const p of playsEls) {
         p.addEventListener("click", (e) => {
-          p.classList.add("click");
-          const target = e.target as any;
-          state.setMove(target.type);
-          setTimeout(() => {
-            this.showPlays();
-          }, 500);
+          if (!this.check) {
+            p.classList.add("click");
+
+            const target = e.target as any;
+
+            state.setPlayerMove(target.type);
+          }
+          this.check = true;
         });
       }
     }
     showPlays() {
-      const currentState = state.getState();
+      console.log("show plays");
+      console.log(
+        this.gameData.playerOne.playerMove,
+        this.gameData.playerTwo.playerMove
+      );
+
       const winner = state.whoWins(
-        currentState.currentGame.myMove,
-        currentState.currentGame.playerTwoMove
+        this.gameData.playerOne.playerMove,
+        this.gameData.playerTwo.playerMove
       );
       const containerEl = this.shadow.querySelector(".page-container");
       containerEl.innerHTML = ``;
       containerEl.innerHTML = `
         <div class= "game__container-result">
         <div class="game__container-result-play animate__animated animate__fadeInDown">
-        <my-play type="${currentState.currentGame.playerTwoMove}" class="game__pc-play " rotate></my-play>
+        <my-play type="${this.gameData.playerTwo.playerMove}" class="game__pc-play " rotate></my-play>
         </div>
         <div class="game__container-result-play animate__animated animate__fadeInUp">
-        <my-play type="${currentState.currentGame.myMove}" class="game__player-play"></my-play>
+        <my-play type="${this.gameData.playerOne.playerMove}" class="game__player-play"></my-play>
         </div>
         </div>
         `;

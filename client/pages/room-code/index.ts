@@ -6,6 +6,7 @@ customElements.define(
   class RoomCode extends HTMLElement {
     shadow = this.attachShadow({ mode: "open" });
     roomId: number;
+    started: boolean = false;
     gameData;
     connectedCallback() {
       this.render();
@@ -21,7 +22,12 @@ customElements.define(
       if (this.gameData.playerTwo) {
         const playerTwoData = this.gameData.playerTwo;
         if (playerTwoData.online) {
-          Router.go("/lobby");
+          if (!this.started) {
+            Router.go("/lobby");
+            //marcador que indica que ya empezo el juego, para que no se vuelva a ejecutar esta funcion
+            //al apretar volver a jugar al final del juego
+            this.started = true;
+          }
         }
       }
     }

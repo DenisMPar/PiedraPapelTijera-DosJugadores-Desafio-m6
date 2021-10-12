@@ -31,6 +31,9 @@
   opacity: 100%;
   height: 280px;
 }
+.game__container-play.click {
+  border: solid 3px chartreuse;
+}
 
 .game__time-over-text {
   font-size: 80px;
