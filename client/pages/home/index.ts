@@ -5,14 +5,28 @@ customElements.define(
   "home-page",
   class Home extends HTMLElement {
     shadow = this.attachShadow({ mode: "open" });
+
     connectedCallback() {
+      //inicia el estado para recuperar un user id del localstorage
+      state.init();
+      const currentState = state.getState();
       this.render();
+
       const newGameButtonEl = this.shadow.querySelector(
         ".main__new-game-button"
       );
+
       newGameButtonEl.addEventListener("click", (e) => {
         e.preventDefault();
-        Router.go("/login");
+        //en caso que exista un user id salteo el login
+        if (currentState.userId) {
+          //recupera el nombre del player y crea una sala
+          state.getPlayerName();
+          state.createAndJoinRoom();
+          Router.go("/room-code");
+        } else {
+          Router.go("/login");
+        }
       });
       const joinGameButtonEl = this.shadow.querySelector(
         ".main__join-game-button"
@@ -20,9 +34,16 @@ customElements.define(
       joinGameButtonEl.addEventListener("click", (e) => {
         e.preventDefault();
         const currentState = state.getState();
+        //el indicador join room sirve para redireccionar a la pagina "join-room" luego de poner el nombre del player
         currentState.joinRoom = true;
         state.setState(currentState);
-        Router.go("/login");
+        //en caso que exista un user id salteo el login
+        if (currentState.userId) {
+          state.getPlayerName();
+          Router.go("/join-room");
+        } else {
+          Router.go("/login");
+        }
       });
     }
     render() {

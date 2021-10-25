@@ -18,15 +18,18 @@ customElements.define(
         this.playerTwoOnline();
       });
     }
+    //verifica que el jugador 2 este online para redireccionar al lobby cuando este se conecte al room
     playerTwoOnline() {
-      if (this.gameData.playerTwo) {
-        const playerTwoData = this.gameData.playerTwo;
-        if (playerTwoData.online) {
-          if (!this.started) {
-            Router.go("/lobby");
-            //marcador que indica que ya empezo el juego, para que no se vuelva a ejecutar esta funcion
-            //al apretar volver a jugar al final del juego
-            this.started = true;
+      if (this.gameData) {
+        if (this.gameData.playerTwo) {
+          const playerTwoData = this.gameData.playerTwo;
+          if (playerTwoData.online) {
+            if (!this.started) {
+              Router.go("/lobby");
+              //marcador que indica que ya empezo el juego, para que no se vuelva a ejecutar esta funcion
+              //al apretar volver a jugar al final del juego
+              this.started = true;
+            }
           }
         }
       }

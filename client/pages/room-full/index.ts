@@ -14,10 +14,10 @@ customElements.define(
       <my-text type = "title" class="main__title">Piedra Papel o Tijera</my-text>
       </div>
       <div class = "main__container-text">
-      <my-text type = "text" class="main__text">Ups, esta sala está completa y tu nombre no coincide con nadie en la sala.</my-text>
+      <my-text type = "text" class="main__text">Ups, la sala no existe o está completa y tu nombre no coincide con nadie en la sala.</my-text>
       </div>
       </main>
-        <my-footer class="footer"></my-footer>
+        <my-footer class="footer"></my-footer> 
         `;
 
       const styles = require("url:./index.css");

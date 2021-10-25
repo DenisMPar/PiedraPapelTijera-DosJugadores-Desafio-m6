@@ -6,6 +6,7 @@ customElements.define(
   class Join extends HTMLElement {
     shadow = this.attachShadow({ mode: "open" });
     roomId: string;
+
     connectedCallback() {
       this.render();
       const currentState = state.getState();
@@ -15,10 +16,12 @@ customElements.define(
       shadowFormEl.addEventListener("submit", (e) => {
         e.preventDefault();
         const target = e.target as any;
+        //guardo el room id que ingreso el usuario
         currentState.roomId = target.input.value;
         state.setState(currentState);
-        state.joinRoom();
-        state.setPlayerOnline();
+        //me uno al room que indico el usuario y luego seteo el estado online:true
+        state.joinRoom(state.setPlayerOnline);
+
         Router.go("/lobby");
       });
     }

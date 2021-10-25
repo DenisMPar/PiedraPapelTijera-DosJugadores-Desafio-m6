@@ -7,42 +7,50 @@ customElements.define(
     roomId: string;
     playerOne: string = "";
     playerTwo: string = "";
-    scorePlayerOne: number = 0;
-    scorePlayerTwo: number = 0;
+    score = {
+      playerOne: 0,
+      playerTwo: 0,
+    };
 
     constructor() {
       super();
       this.shadow = this.attachShadow({ mode: "open" });
     }
     connectedCallback() {
+      this.score = state.historyResults();
       this.render();
       state.subscribe(() => {
+        this.score = state.historyResults();
         this.getPlayersName();
         this.showPlayersScore();
       });
     }
+    //actualiza los nombres de los jugadores en el componente
     getPlayersName() {
       const currentState = state.getState();
-      if (currentState.gameData.playerTwo) {
-        const playerTwoData = currentState.gameData.playerTwo;
-        if (playerTwoData.playerName) {
-          this.playerTwo = playerTwoData.playerName;
+      if (currentState.gameData) {
+        if (currentState.gameData.playerTwo) {
+          const playerTwoData = currentState.gameData.playerTwo;
+          if (playerTwoData.playerName) {
+            this.playerTwo = playerTwoData.playerName;
+          }
         }
-      }
-      if (currentState.gameData.playerOne) {
-        const playerOneData = currentState.gameData.playerOne;
-        if (playerOneData.playerName) {
-          this.playerOne = playerOneData.playerName;
+        if (currentState.gameData.playerOne) {
+          const playerOneData = currentState.gameData.playerOne;
+          if (playerOneData.playerName) {
+            this.playerOne = playerOneData.playerName;
+          }
         }
       }
     }
+
     showPlayersScore() {
       const containerScore = this.shadow.querySelector(
         ".room-data__container-score"
       );
       containerScore.innerHTML = `
-      <my-text type = "text" class="score__player-one">${this.playerOne}: ${this.scorePlayerOne}</my-text>
-      <my-text type = "text" class="score__player-two">${this.playerTwo}: ${this.scorePlayerTwo}</my-text>
+      <my-text type = "text" class="score__player-one">${this.playerOne}: ${this.score.playerOne}</my-text>
+      <my-text type = "text" class="score__player-two">${this.playerTwo}: ${this.score.playerTwo}</my-text>
       `;
     }
     render() {

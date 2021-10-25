@@ -9,36 +9,44 @@ customElements.define(
     playerTwoReady: boolean = false;
     check: boolean;
     gameData;
+
     connectedCallback() {
-      const currentState = state.getState();
-      this.gameData = currentState.gameData;
       this.check = false;
+      const currentState = state.getState();
+      //pongo el auxiliar started en false para que se ejecuten las funciones del subscribe
+      currentState.started = false;
+      state.setState(currentState);
+
+      state.getHistory();
+      this.checkPlayerReady();
       this.render();
       state.subscribe(() => {
         const currentState = state.getState();
         this.gameData = currentState.gameData;
-        this.getPlayerTwoName();
-        this.checkPlayerReady();
-        this.render();
+        if (!currentState.started) {
+          this.getPlayerTwoName();
+          this.checkPlayerReady();
+        }
       });
       const buttonEl = this.shadow.querySelector(".main__new-game-button");
       buttonEl.addEventListener("click", (e) => {
         e.preventDefault();
+
         state.setPlayerReady(true);
-        this.check = true;
+
         if (this.playerTwoReady) {
           Router.go("/game");
-          this.check = false;
         }
       });
     }
+    //funcion que muestra la pantalla de espera cuando el otro jugador no ha apretado "jugar"
     getPlayerTwoName() {
       if (this.gameData) {
         if (this.gameData.playerTwo) {
           const playerTwoData = this.gameData.playerTwo;
           if (playerTwoData.playerName) {
             this.playerTwoName = playerTwoData.playerName;
-            if (this.check) {
+            if (this.gameData.playerOne.ready) {
               const mainEl = this.shadow.querySelector(".main");
               mainEl.innerHTML = `
               <my-text type = "text" class="main__text">Esperando a que ${this.playerTwoName} presione jugar
@@ -49,21 +57,24 @@ customElements.define(
         }
       }
     }
+    //funcion que checkea si el jugador 2 esta listo para ir a la pantalla del juego
     checkPlayerReady() {
-      if (this.gameData.playerTwo) {
-        const playerTwoData = this.gameData.playerTwo;
-        if (playerTwoData.ready) {
-          this.playerTwoReady = playerTwoData.ready;
-          if (this.check) {
-            console.log("checked");
-            Router.go("/game");
-            this.check = false;
+      if (this.gameData) {
+        if (this.gameData.playerTwo) {
+          const playerTwoData = this.gameData.playerTwo;
+          if (playerTwoData.ready) {
+            this.playerTwoReady = true;
+            if (this.gameData.playerOne.ready) {
+              Router.go("/game");
+            }
           }
         }
       }
     }
 
     render() {
+      console.log("render");
+
       const containerEl = document.createElement("div");
       containerEl.classList.add("page-container");
       containerEl.innerHTML = `
@@ -87,6 +98,12 @@ customElements.define(
       linkEl.href = styles;
       const shadowHead = document.createElement("head");
       shadowHead.appendChild(linkEl);
+      const childrensEl = this.shadow.children;
+      if (childrensEl) {
+        for (const child of childrensEl) {
+          this.shadow.removeChild(child);
+        }
+      }
       this.shadow.appendChild(shadowHead);
       this.shadow.appendChild(containerEl);
     }

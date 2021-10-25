@@ -16,14 +16,39 @@ const roomsCollection = firestore.collection("rooms");
 app.post("/login", (req, res) => {
   const { playerName } = req.body;
 
+  //reviso la base de datos para ver si existe un user con ese nombre
   usersCollection
-    .add({
-      playerName: playerName,
-    })
-    .then((userRef) => {
-      res.json({
-        id: userRef.id,
-      });
+    .where("playerName", "==", playerName)
+    .get()
+    .then((query) => {
+      //si no existe crea un user nuevo
+      if (query.empty) {
+        usersCollection
+          .add({
+            playerName: playerName,
+          })
+          .then((userRef) => {
+            res.json({
+              id: userRef.id,
+            });
+          });
+      } else {
+        //si existe devuelve el id del usuario existente
+        query.forEach((doc) => {
+          res.json({
+            id: doc.id,
+          });
+        });
+      }
+    });
+});
+app.get("/users/:userId", (req, res) => {
+  const { userId } = req.params;
+  usersCollection
+    .doc(userId.toString())
+    .get()
+    .then((snap) => {
+      res.json(snap.data());
     });
 });
 
@@ -80,7 +105,50 @@ app.get("/rooms/:id", (req, res) => {
           .doc(req.params.id.toString())
           .get()
           .then((snap) => {
-            res.json(snap.data());
+            if (snap.data()) {
+              const realTimeRoom = realTime.ref(
+                "rooms/" + snap.data().realTimeId + "/currentGame"
+              );
+              realTimeRoom.get().then((doc) => {
+                //chequeo si existe current game dentro del room
+                if (doc.exists()) {
+                  const childerns = doc.numChildren();
+
+                  //si currentGame tiene un solo hijo (player 1)
+                  //permite que se una el segundo usuario, por lo tanto duevle el id
+                  if (childerns == 1) {
+                    res.json(snap.data());
+                  } else {
+                    //si tiene mas de un hijo hago referencia a un doc con id del user
+                    const realTimeRoomUser = realTime.ref(
+                      "rooms/" +
+                        snap.data().realTimeId +
+                        "/currentGame/" +
+                        userId
+                    );
+                    realTimeRoomUser.get().then((doc) => {
+                      //si el doc existe el jugador estuvo unido previamente al room y lo deja entrar devolviendo el id
+                      if (doc.exists()) {
+                        console.log("eres de la sala");
+
+                        res.json(snap.data());
+                      } else {
+                        res.json({
+                          message: "no perteneces a la sala",
+                        });
+                      }
+                    });
+                  }
+                } else {
+                  //si currentGame no existe, devuelvo el id, ya que se trata de una sala recien creada
+                  res.json(snap.data());
+                }
+              });
+            } else {
+              res.json({
+                message: "el room no existe",
+              });
+            }
           });
       } else {
         res.status(404).json({
@@ -248,6 +316,71 @@ app.post("/rooms/:roomId/reset", (req, res) => {
         res.status(404).json({
           message: "user doesn't exist",
         });
+      }
+    });
+});
+app.post("/rooms/:roomId/history", (req, res) => {
+  const { roomId } = req.params;
+  const { userId } = req.body;
+  const { game } = req.body;
+  usersCollection
+    .doc(userId.toString())
+    .get()
+    .then((snap) => {
+      if (snap.exists) {
+        roomsCollection
+          .doc(roomId)
+          .get()
+          .then((snap) => {
+            const rtdbRoomId = snap.data().realTimeId;
+            const room = realTime.ref(
+              "rooms/" + rtdbRoomId + "/currentGame/history"
+            );
+            room.push(game).then(() => {
+              room.get().then((data) => {
+                roomsCollection
+                  .doc(roomId)
+                  .update({
+                    history: data.val(),
+                  })
+                  .then(() => {
+                    res.json({
+                      message: "history setted",
+                    });
+                  });
+              });
+            });
+          });
+      } else {
+        res.status(404).json({
+          message: "user doesn't exist",
+        });
+      }
+    });
+});
+
+app.get("/rooms/:roomId/history", (req, res) => {
+  const { roomId } = req.params;
+  const { userId } = req.query;
+  usersCollection
+    .doc(userId.toString())
+    .get()
+    .then((snap) => {
+      if (snap.exists) {
+        roomsCollection
+          .doc(roomId)
+          .get()
+          .then((snap) => {
+            if (snap.data()) {
+              if (snap.data().history) {
+                res.json(snap.data().history);
+              } else {
+                res.status(404);
+              }
+            }
+          });
+      } else {
+        res.status(404);
       }
     });
 });

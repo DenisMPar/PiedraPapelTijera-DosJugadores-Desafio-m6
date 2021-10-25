@@ -18,6 +18,7 @@ customElements.define(
       const formEl = this.shadow.querySelector(".main__form");
       const shadowFormEl = formEl.shadowRoot.querySelector("form");
 
+      //el evento crea un user y setea el nombre del player
       if (this.joinRoom) {
         shadowFormEl.addEventListener("submit", (e) => {
           e.preventDefault();

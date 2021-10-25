@@ -10,7 +10,6 @@ import "./pages/home";
 import "./pages/join-room";
 import "./pages/login";
 import "./pages/room-full";
-import "./pages/code-error";
 import "./pages/room-code";
 import "./pages/lobby";
 import "./pages/game";

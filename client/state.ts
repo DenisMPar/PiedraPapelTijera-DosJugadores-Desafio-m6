@@ -2,6 +2,7 @@ import { join } from "path/posix";
 import { callbackify } from "util";
 import { API_BASE_URL, rtdb } from "./front-database";
 import map from "lodash/map";
+import { Router } from "@vaadin/router";
 
 type Jugada = "piedra" | "papel" | "tijera" | "nada";
 type Game = {
@@ -19,12 +20,44 @@ const state = {
     history: [],
   },
   listeners: [],
+  //carga la data desde local storage
+  init() {
+    const currentState = state.getState();
+    const localState = localStorage.getItem("state");
+    const localStateParsed = JSON.parse(localState);
+    if (localState) {
+      state.setState({ ...currentState, ...localStateParsed });
+    }
+  },
+  //obtiene el id de local storage
+  getLocalId() {
+    const currentState = state.getState();
+    const localId = localStorage.getItem("roomId");
+    const localIdParsed = JSON.parse(localId);
+    if (localId) {
+      state.setState({ ...currentState, ...localIdParsed });
+    }
+  },
+  //deuvelve el state
   getState() {
     return this.data;
   },
+  //setea un nuevo state
   setState(newState) {
-    // console.log("soy el state he cambiado: ", newState);
+    console.log("soy el state he cambiado: ", newState);
     this.data = newState;
+    if (newState.userId) {
+      const userId = {
+        userId: newState.userId,
+      };
+      localStorage.setItem("state", JSON.stringify(userId));
+    }
+    if (newState.roomId) {
+      const roomId = {
+        roomId: newState.roomId,
+      };
+      localStorage.setItem("roomId", JSON.stringify(roomId));
+    }
     for (const cb of this.listeners) {
       cb();
     }
@@ -32,26 +65,10 @@ const state = {
   subscribe(callback: (any) => any) {
     this.listeners.push(callback);
   },
-  // setMove(move: Jugada) {
-  //   const currentState = this.getState();
-  //   currentState.currentGame.myMove = move;
-  //   this.setState(currentState);
-  //   this.setPlayerMove();
-  // },
-  //calcula quien gano la partida. 0 para pc, 1 para player y 2 para empate
-  setRandom() {
-    const random = Math.floor(Math.random() * (0 - 3)) + 3;
-    const jugadas = [
-      { random: 0, play: "piedra" },
-      { random: 1, play: "papel" },
-      { random: 2, play: "tijera" },
-    ];
-    for (const j of jugadas) {
-      if (j.random == random) {
-        return j.play;
-      }
-    }
-  },
+
+  //calcula quien gano la partida.
+  //devuelve 0 si gano el jugador 2, 1 si gano el jugador 1 y 2 para empate
+
   whoWins(myMove: Jugada, playerTwoMove: Jugada) {
     let winner = 0;
     const jugadasGanadoras = [
@@ -70,15 +87,28 @@ const state = {
     if (myMove == playerTwoMove) {
       winner = 2;
     }
-    console.log("winner", winner);
 
     return winner;
   },
+  //setea el nombre del jugador en el state
   setPlayerName(playerName: string) {
     const currentState = state.getState();
     currentState.playerName = playerName;
     state.setState(currentState);
   },
+  //hace un  fetch a la api con el id del user para recuperar su nombre
+  getPlayerName() {
+    const currentState = state.getState();
+    fetch(API_BASE_URL + "/users/" + currentState.userId)
+      .then((data) => {
+        return data.json();
+      })
+      .then((data) => {
+        currentState.playerName = data.playerName;
+        state.setState(currentState);
+      });
+  },
+  //crea un nuevo user
   createUser(callback?) {
     const currentState = state.getState();
     fetch(API_BASE_URL + "/login", {
@@ -102,6 +132,7 @@ const state = {
         }
       });
   },
+  //crea un nuevo room y luego recupera el id largo de la misma
   createAndJoinRoom(callback?) {
     const currentState = state.getState();
 
@@ -120,11 +151,11 @@ const state = {
       .then((data) => {
         currentState.roomId = data.id;
         state.setState(currentState);
-        state.joinRoom();
-        state.setPlayerOnline();
+        state.joinRoom(state.setPlayerOnline);
       });
   },
-  joinRoom() {
+  //recupera el id largo de un room
+  joinRoom(callback?) {
     const currentState = state.getState();
     fetch(
       API_BASE_URL +
@@ -137,12 +168,22 @@ const state = {
         return res.json();
       })
       .then((data) => {
+        //si la api no devuelve un id redirecciona a la pagina room full
+        if (!data.realTimeId) {
+          Router.go("/room-full");
+        }
+
+        if (callback) {
+          if (data.realTimeId) {
+            callback();
+          }
+        }
         currentState.realTimeId = data.realTimeId;
         state.setState(currentState);
-        console.log("me uni al room: " + data.realTimeId);
         state.listenToRoom();
       });
   },
+  //setea el estado online del player en la database
   setPlayerOnline() {
     const currentState = state.getState();
 
@@ -155,14 +196,10 @@ const state = {
         playerName: currentState.playerName,
         userId: currentState.userId,
       }),
-    })
-      .then((data) => {
-        return data.json();
-      })
-      .then((data) => {
-        console.log(data);
-      });
+    });
   },
+
+  //se subscribe a los cambios del room en la realtime DB
   listenToRoom() {
     const currentState = this.getState();
 
@@ -170,34 +207,43 @@ const state = {
       const chatRoomRef = rtdb.ref(
         "/rooms/" + currentState.realTimeId + "/currentGame"
       );
-
-      chatRoomRef.on("value", (snap) => {
-        // console.log("cambio la data");
-
-        if (snap.val()) {
-          const gameData = snap.val();
-          //setea el movimiento del jugador 2 en el espacio currentGame
-          this.setGameData(gameData);
+      chatRoomRef.get().then((doc) => {
+        if (doc.child(currentState.userId).exists) {
+          chatRoomRef.on("value", (snap) => {
+            if (snap.val()) {
+              const gameData = snap.val();
+              //setea los cambios en el room en gameData
+              this.setGameData(gameData);
+            }
+          });
         }
       });
     } else {
-      console.error("no se encontro el room");
+      console.error("El room no existe");
     }
   },
+  //guarda los datos de cada jugador en el state
+  //(user id, player name, si el jugador esta online, si el jugador esta listo)
+  //y guarda el historial de jugadas
+
   setGameData(gameData) {
     const currentState = state.getState();
     const gameDataMapped = map(gameData);
     for (const player of gameDataMapped) {
       if (player.userId == currentState.userId) {
         currentState.gameData.playerOne = player;
-      } else {
+      }
+      if (player.userId && player.userId != currentState.userId) {
         currentState.gameData.playerTwo = player;
       }
+      if (!player.userId) {
+        currentState.history = player;
+      }
     }
-    // console.log("nueva data de juego ", currentState.gameData);
 
     state.setState(currentState);
   },
+  //setea en la database si un jugador esta listo para empezar el juego
   setPlayerReady(ready: boolean) {
     const currentState = state.getState();
     console.log("player ready cambio");
@@ -212,14 +258,9 @@ const state = {
         userId: currentState.userId,
         ready: ready,
       }),
-    })
-      .then((data) => {
-        return data.json();
-      })
-      .then((data) => {
-        console.log(data);
-      });
+    });
   },
+  //guarda la jugada del usuario en la database
   setPlayerMove(playerMove: Jugada) {
     const currentState = state.getState();
     console.log("jugada:", playerMove);
@@ -234,15 +275,9 @@ const state = {
         userId: currentState.userId,
         playerMove: playerMove,
       }),
-    })
-      .then((data) => {
-        return data.json();
-      })
-      .then((data) => {
-        console.log(data);
-      });
+    });
   },
-  resetReady() {},
+  //resetea el estado "ready" y la jugada dque hizo cada jugador
   resetGameData() {
     const currentState = state.getState();
 
@@ -255,29 +290,44 @@ const state = {
         roomId: currentState.roomId,
         userId: currentState.userId,
       }),
-    })
-      .then((data) => {
-        return data.json();
-      })
-      .then((data) => {
-        console.log(data);
-      });
+    });
   },
-  setHistory(game: Game) {
-    const currentState = this.getState();
-    currentState.history.push(game);
-    this.setState(currentState);
+  //guarda las jugadas de ambos usuarios en la database
+  setHistory(game) {
+    const currentState = state.getState();
+
+    fetch(API_BASE_URL + "/rooms/" + currentState.roomId + "/history", {
+      method: "post",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        roomId: currentState.roomId,
+        userId: currentState.userId,
+        game,
+      }),
+    });
   },
+  //calcula el score de ambos jugadores a partir del historial de jugadas
   historyResults() {
     const lastState = state.getState();
     const score = {
       playerOne: 0,
       playerTwo: 0,
     };
-    for (const i of lastState.history) {
-      console.log("calculando");
+    let playerOneName = "";
+    let playerTwoName = "";
+    if (lastState.gameData.playerOne) {
+      playerOneName = lastState.gameData.playerOne.playerName;
+    }
+    if (lastState.gameData.playerTwo) {
+      playerTwoName = lastState.gameData.playerTwo.playerName;
+    }
 
-      const resultado = state.whoWins(i.playerOneMove, i.playerTwoMove);
+    const historyMapped = map(lastState.history);
+
+    for (const i of historyMapped) {
+      const resultado = state.whoWins(i[playerOneName], i[playerTwoName]);
       if (resultado == 0) {
         score.playerTwo++;
       }
@@ -286,6 +336,25 @@ const state = {
       }
     }
     return score;
+  },
+  //trea el historial de jugadas desde la database
+  getHistory() {
+    const currentState = state.getState();
+    fetch(
+      API_BASE_URL +
+        "/rooms/" +
+        currentState.roomId +
+        "/history/?userId=" +
+        currentState.userId
+    )
+      .then((data) => {
+        return data.json();
+      })
+      .then((data) => {
+        const currentState = state.getState();
+        currentState.history = data;
+        state.setState(currentState);
+      });
   },
 };
 export { state };

@@ -7,24 +7,43 @@ customElements.define(
     shadow: ShadowRoot;
     playerOneName: string = "";
     playerTwoName: string = "";
+    gameData;
     score = {
       playerOne: 0,
       playerTwo: 0,
     };
+    check: boolean = false;
     connectedCallback() {
       this.shadow = this.attachShadow({ mode: "open" });
-      const lastState = state.getState();
-      const game = {
-        playerOneMove: lastState.gameData.playerOne.playerMove,
-        playerTwoMove: lastState.gameData.playerTwo.playerMove,
-      };
-      console.log("spy el juego", game);
-
-      state.setHistory(game);
       this.showHistory();
-      state.resetGameData();
       this.render();
+      state.resetGameData();
+      state.subscribe(() => {
+        const lastState = state.getState();
+        //creo un objeto con los nombres de los jugadores y la jugada que hicieron
+        const game = {
+          [lastState.gameData.playerOne.playerName]:
+            lastState.gameData.playerOne.playerMove,
+          [lastState.gameData.playerTwo.playerName]:
+            lastState.gameData.playerTwo.playerMove,
+        };
+        //checkeo que exista la data de las jugadas antes de setear el historial
+        if (
+          lastState.gameData.playerOne.playerMove &&
+          lastState.gameData.playerTwo.playerMove
+        ) {
+          //el auxiliar check evita que se ejecute la funcion cuando no estoy en la pagina
+          if (!this.check) {
+            //subo al historial las jugadas actuales
+            state.setHistory(game);
+            this.check = true;
+          }
+        }
+        this.showHistory();
+        this.render();
+      });
     }
+    //funcion que recupera el nombre de los jugadores y el historial
     showHistory() {
       const lastState = state.getState();
       this.playerOneName = lastState.gameData.playerOne.playerName;
@@ -51,8 +70,6 @@ customElements.define(
       const buttonEl = containerEl.querySelector("my-button");
       buttonEl.addEventListener("click", (e) => {
         e.preventDefault;
-        console.log("click");
-
         Router.go("/lobby");
       });
       const styles = require("url:./index.css");
@@ -60,8 +77,15 @@ customElements.define(
       linkEl.rel = "stylesheet";
       linkEl.href = styles;
       const shadowHead = document.createElement("head");
-
       shadowHead.appendChild(linkEl);
+
+      //Elimino los childrens del shadow cada vez que vuelvo a renderizar la pagina
+      const childrens = this.shadow.children;
+      if (childrens) {
+        for (const i of childrens) {
+          this.shadow.removeChild(i);
+        }
+      }
       this.shadow.appendChild(shadowHead);
       this.shadow.appendChild(containerEl);
     }
