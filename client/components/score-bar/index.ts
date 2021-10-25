@@ -4,7 +4,7 @@ customElements.define(
   "my-score-bar",
   class ScoreBar extends HTMLElement {
     shadow: ShadowRoot;
-    roomId: string;
+    roomId: string = "";
     playerOne: string = "";
     playerTwo: string = "";
     score = {
@@ -19,6 +19,7 @@ customElements.define(
     connectedCallback() {
       this.score = state.historyResults();
       this.render();
+      this.showRoomId();
       state.subscribe(() => {
         this.score = state.historyResults();
         this.getPlayersName();

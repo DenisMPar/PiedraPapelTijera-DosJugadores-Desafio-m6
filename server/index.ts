@@ -117,7 +117,9 @@ app.get("/rooms/:id", (req, res) => {
                   //si currentGame tiene un solo hijo (player 1)
                   //permite que se una el segundo usuario, por lo tanto duevle el id
                   if (childerns == 1) {
-                    res.json(snap.data());
+                    res.json({
+                      realTimeId: snap.data().realTimeId,
+                    });
                   } else {
                     //si tiene mas de un hijo hago referencia a un doc con id del user
                     const realTimeRoomUser = realTime.ref(
@@ -131,7 +133,9 @@ app.get("/rooms/:id", (req, res) => {
                       if (doc.exists()) {
                         console.log("eres de la sala");
 
-                        res.json(snap.data());
+                        res.json({
+                          realTimeId: snap.data().realTimeId,
+                        });
                       } else {
                         res.json({
                           message: "no perteneces a la sala",
@@ -141,7 +145,9 @@ app.get("/rooms/:id", (req, res) => {
                   }
                 } else {
                   //si currentGame no existe, devuelvo el id, ya que se trata de una sala recien creada
-                  res.json(snap.data());
+                  res.json({
+                    realTimeId: snap.data().realTimeId,
+                  });
                 }
               });
             } else {
@@ -299,18 +305,6 @@ app.post("/rooms/:roomId/reset", (req, res) => {
                 });
               });
             });
-            // room
-            //   .get()
-            //   .then((snap) => {
-            //     return snap.val();
-            //   })
-            //   .then((data) => {
-            //     room.set({ ...data, playerMove }).then(() => {
-            //       res.json({
-            //         message: "player moved",
-            //       });
-            //     });
-            //   });
           });
       } else {
         res.status(404).json({

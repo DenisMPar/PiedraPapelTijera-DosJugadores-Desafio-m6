@@ -29,15 +29,7 @@ const state = {
       state.setState({ ...currentState, ...localStateParsed });
     }
   },
-  //obtiene el id de local storage
-  getLocalId() {
-    const currentState = state.getState();
-    const localId = localStorage.getItem("roomId");
-    const localIdParsed = JSON.parse(localId);
-    if (localId) {
-      state.setState({ ...currentState, ...localIdParsed });
-    }
-  },
+
   //deuvelve el state
   getState() {
     return this.data;
@@ -46,18 +38,14 @@ const state = {
   setState(newState) {
     console.log("soy el state he cambiado: ", newState);
     this.data = newState;
+    //su hay un userID lo guardo en el local storage como state
     if (newState.userId) {
       const userId = {
         userId: newState.userId,
       };
       localStorage.setItem("state", JSON.stringify(userId));
     }
-    if (newState.roomId) {
-      const roomId = {
-        roomId: newState.roomId,
-      };
-      localStorage.setItem("roomId", JSON.stringify(roomId));
-    }
+
     for (const cb of this.listeners) {
       cb();
     }
