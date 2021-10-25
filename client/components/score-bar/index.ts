@@ -23,11 +23,15 @@ customElements.define(
         this.score = state.historyResults();
         this.getPlayersName();
         this.showPlayersScore();
+        this.showRoomId();
       });
     }
     //actualiza los nombres de los jugadores en el componente
     getPlayersName() {
       const currentState = state.getState();
+      if (currentState.roomId) {
+        this.roomId = currentState.roomId;
+      }
       if (currentState.gameData) {
         if (currentState.gameData.playerTwo) {
           const playerTwoData = currentState.gameData.playerTwo;
@@ -53,6 +57,15 @@ customElements.define(
       <my-text type = "text" class="score__player-two">${this.playerTwo}: ${this.score.playerTwo}</my-text>
       `;
     }
+    showRoomId() {
+      const containerId = this.shadow.querySelector(
+        ".room-data__container-room-code"
+      );
+      containerId.innerHTML = `
+      <my-text type = "text" class="room-code__room">Sala</my-text>
+      <my-text type = "text" class="room-code__code">${this.roomId}</my-text>
+      `;
+    }
     render() {
       const scoreBarEl = document.createElement("div");
       scoreBarEl.classList.add("score-bar");
@@ -60,8 +73,7 @@ customElements.define(
       <div class = "room-data__container-score">
       </div>
       <div class = "room-data__container-room-code">
-      <my-text type = "text" class="room-code__room">Sala</my-text>
-      <my-text type = "text" class="room-code__code">75KD4</my-text>
+      </div>
       `;
 
       const styles = require("url:./index.css");
