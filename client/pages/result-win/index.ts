@@ -15,32 +15,34 @@ customElements.define(
     check: boolean = false;
     connectedCallback() {
       this.shadow = this.attachShadow({ mode: "open" });
-      this.showHistory();
       this.render();
-      state.resetGameData();
-      state.subscribe(() => {
-        const lastState = state.getState();
-        //creo un objeto con los nombres de los jugadores y la jugada que hicieron
-        const game = {
-          [lastState.gameData.playerOne.playerName]:
-            lastState.gameData.playerOne.playerMove,
-          [lastState.gameData.playerTwo.playerName]:
-            lastState.gameData.playerTwo.playerMove,
-        };
-        //checkeo que exista la data de las jugadas antes de setear el historial
-        if (
-          lastState.gameData.playerOne.playerMove &&
-          lastState.gameData.playerTwo.playerMove
-        ) {
-          //el auxiliar check evita que se ejecute la funcion cuando no estoy en la pagina
-          if (!this.check) {
-            //subo al historial las jugadas actuales
-            state.setHistory(game);
-            this.check = true;
-          }
+
+      const lastState = state.getState();
+      //creo un objeto con los nombres de los jugadores y la jugada que hicieron
+      const game = {
+        [lastState.gameData.playerOne.playerName]:
+          lastState.gameData.playerOne.playerMove,
+        [lastState.gameData.playerTwo.playerName]:
+          lastState.gameData.playerTwo.playerMove,
+      };
+      //checkeo que exista la data de las jugadas antes de setear el historial
+      if (
+        lastState.gameData.playerOne.playerMove &&
+        lastState.gameData.playerTwo.playerMove
+      ) {
+        console.log("seteando historial, jugadas");
+        //el auxiliar check evita que se ejecute la funcion cuando no estoy en la pagina
+        if (!this.check) {
+          console.log("seteando historial");
+
+          //subo al historial las jugadas actuales
+          state.setHistory(game);
+          this.check = true;
         }
+      }
+      this.showHistory();
+      state.subscribe(() => {
         this.showHistory();
-        this.render();
       });
     }
     //funcion que recupera el nombre de los jugadores y el historial
@@ -49,8 +51,19 @@ customElements.define(
       this.playerOneName = lastState.gameData.playerOne.playerName;
       this.playerTwoName = lastState.gameData.playerTwo.playerName;
       this.score = state.historyResults();
+      const containerScoreEl = this.shadow.querySelector(
+        ".result__container-score"
+      );
+      if (containerScoreEl) {
+        containerScoreEl.innerHTML = ``;
+        containerScoreEl.innerHTML = `
+        <my-score playerOne ="${this.score.playerOne}" playerOneName = ${this.playerOneName} playerTwo="${this.score.playerTwo}" playerTwoName = ${this.playerTwoName} ></my-score>
+        `;
+      }
     }
     render() {
+      console.log("render");
+
       const containerEl = document.createElement("div");
       containerEl.innerHTML = `
       <main class ="main">
@@ -60,7 +73,6 @@ customElements.define(
       <my-result type="win">Ganaste</my-result>
       </div>
       <div class="result__container-score">
-      <my-score playerOne ="${this.score.playerOne}" playerOneName = ${this.playerOneName} playerTwo="${this.score.playerTwo}" playerTwoName = ${this.playerTwoName} ></my-score>
       </div>
       <div class="result__container-button">
       <my-button>Volver a jugar</my-button>
@@ -79,13 +91,19 @@ customElements.define(
       const shadowHead = document.createElement("head");
       shadowHead.appendChild(linkEl);
 
-      //Elimino los childrens del shadow cada vez que vuelvo a renderizar la pagina
-      const childrens = this.shadow.children;
-      if (childrens) {
-        for (const i of childrens) {
-          this.shadow.removeChild(i);
-        }
-      }
+      // //Elimino los childrens del shadow cada vez que vuelvo a renderizar la pagina
+      // const childrens = this.shadow.children;
+      // console.log(childrens);
+
+      // if (childrens) {
+      //   console.log("childrenss");
+
+      //   for (const i of childrens) {
+      //     console.log("removing", i);
+
+      //     this.shadow.removeChild(i);
+      //   }
+      // }
       this.shadow.appendChild(shadowHead);
       this.shadow.appendChild(containerEl);
     }

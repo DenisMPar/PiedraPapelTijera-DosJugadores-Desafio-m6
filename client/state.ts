@@ -265,9 +265,10 @@ const state = {
       }),
     });
   },
-  //resetea el estado "ready" y la jugada dque hizo cada jugador
+  //resetea la jugada que hizo cada jugador
   resetGameData() {
     const currentState = state.getState();
+    console.log("reseteando");
 
     fetch(API_BASE_URL + "/rooms/" + currentState.roomId + "/reset", {
       method: "post",

@@ -292,17 +292,13 @@ app.post("/rooms/:roomId/reset", (req, res) => {
           .get()
           .then((snap) => {
             const rtdbRoomId = snap.data().realTimeId;
+
             const room = realTime.ref(
-              "rooms/" + rtdbRoomId + "/currentGame/" + userId + "/ready"
+              "rooms/" + rtdbRoomId + "/currentGame/" + userId + "/playerMove"
             );
             room.remove().then(() => {
-              const room = realTime.ref(
-                "rooms/" + rtdbRoomId + "/currentGame/" + userId + "/playerMove"
-              );
-              room.remove().then(() => {
-                res.json({
-                  message: "removed",
-                });
+              res.json({
+                message: "removed",
               });
             });
           });

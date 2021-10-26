@@ -12,12 +12,11 @@ customElements.define(
     gameData;
     connectedCallback() {
       this.shadow = this.attachShadow({ mode: "open" });
-      this.showHistory();
       this.render();
-      state.resetGameData();
+      this.showHistory();
+
       state.subscribe(() => {
         this.showHistory();
-        this.render();
       });
     }
     //funcion que recupera el nombre de los jugadores y el historial
@@ -26,6 +25,15 @@ customElements.define(
       this.playerOneName = lastState.gameData.playerOne.playerName;
       this.playerTwoName = lastState.gameData.playerTwo.playerName;
       this.score = state.historyResults();
+      const containerScoreEl = this.shadow.querySelector(
+        ".result__container-score"
+      );
+      if (containerScoreEl) {
+        containerScoreEl.innerHTML = ``;
+        containerScoreEl.innerHTML = `
+        <my-score playerOne ="${this.score.playerOne}" playerOneName = ${this.playerOneName} playerTwo="${this.score.playerTwo}" playerTwoName = ${this.playerTwoName} ></my-score>
+        `;
+      }
     }
     render() {
       const containerEl = document.createElement("div");
@@ -37,7 +45,6 @@ customElements.define(
         <my-result type="lose">Perdiste</my-result>
         </div>
         <div class="result__container-score">
-        <my-score playerOne ="${this.score.playerOne}" playerOneName = "${this.playerOneName}"  playerTwo="${this.score.playerTwo}" playerTwoName = "${this.playerTwoName}" ></my-score>
         </div>
         <div class="result__container-button">
         <my-button>Volver a jugar</my-button>
@@ -57,13 +64,7 @@ customElements.define(
       linkEl.href = styles;
       const shadowHead = document.createElement("head");
       shadowHead.appendChild(linkEl);
-      //Elimino los childrens del shadow cada vez que vuelvo a renderizar la pagina
-      const childrens = this.shadow.children;
-      if (childrens) {
-        for (const i of childrens) {
-          this.shadow.removeChild(i);
-        }
-      }
+
       this.shadow.appendChild(shadowHead);
       this.shadow.appendChild(containerEl);
     }
