@@ -46,6 +46,9 @@
   display: grid;
   gap: 20px;
 }
+.game__try-again-button {
+  margin-bottom: 80px;
+}
 
 .game__container-result {
   display: grid;
