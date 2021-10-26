@@ -3,7 +3,6 @@ import * as express from "express";
 import { nanoid } from "nanoid";
 import * as cors from "cors";
 import * as path from "path";
-import * as map from "lodash/map";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -105,23 +104,24 @@ app.get("/rooms/:id", (req, res) => {
           .doc(req.params.id.toString())
           .get()
           .then((snap) => {
+            //chockeo si existe el room
             if (snap.data()) {
               const realTimeRoom = realTime.ref(
                 "rooms/" + snap.data().realTimeId + "/currentGame"
               );
               realTimeRoom.get().then((doc) => {
-                //chequeo si existe current game dentro del room
+                //chequeo si existe /currentGame dentro del room
                 if (doc.exists()) {
                   const childerns = doc.numChildren();
 
                   //si currentGame tiene un solo hijo (player 1)
-                  //permite que se una el segundo usuario, por lo tanto duevle el id
+                  //permite que se una el segundo usuario, por lo tanto devulve el id
                   if (childerns == 1) {
                     res.json({
                       realTimeId: snap.data().realTimeId,
                     });
                   } else {
-                    //si tiene mas de un hijo hago referencia a un doc con id del user
+                    //si tiene mas de un hijo hago referencia a un doc en /currenGame con id del user
                     const realTimeRoomUser = realTime.ref(
                       "rooms/" +
                         snap.data().realTimeId +
@@ -131,8 +131,6 @@ app.get("/rooms/:id", (req, res) => {
                     realTimeRoomUser.get().then((doc) => {
                       //si el doc existe el jugador estuvo unido previamente al room y lo deja entrar devolviendo el id
                       if (doc.exists()) {
-                        console.log("eres de la sala");
-
                         res.json({
                           realTimeId: snap.data().realTimeId,
                         });
@@ -164,7 +162,7 @@ app.get("/rooms/:id", (req, res) => {
     });
 });
 
-//setea el estado online de un player
+//setea el estado "online" de un player
 app.post("/rooms/:roomId/online", (req, res) => {
   const { roomId } = req.params;
   const { playerName } = req.body;
@@ -203,7 +201,7 @@ app.post("/rooms/:roomId/online", (req, res) => {
     });
 });
 
-//setea el estado de listo de un jugador
+//setea el estado "ready" de un jugador
 app.post("/rooms/:roomId/ready", (req, res) => {
   const { roomId } = req.params;
   const { userId } = req.body;
@@ -241,7 +239,7 @@ app.post("/rooms/:roomId/ready", (req, res) => {
       }
     });
 });
-
+//setea la jugada actual del jugador
 app.post("/rooms/:roomId/move", (req, res) => {
   const { roomId } = req.params;
   const { userId } = req.body;
@@ -279,6 +277,7 @@ app.post("/rooms/:roomId/move", (req, res) => {
       }
     });
 });
+//elimina la jugada actual, para poder iniciar un nuevo juego
 app.post("/rooms/:roomId/reset", (req, res) => {
   const { roomId } = req.params;
   const { userId } = req.body;
@@ -309,6 +308,7 @@ app.post("/rooms/:roomId/reset", (req, res) => {
       }
     });
 });
+//guarda el historial en la base de datos realTime y en firestore
 app.post("/rooms/:roomId/history", (req, res) => {
   const { roomId } = req.params;
   const { userId } = req.body;
@@ -326,8 +326,11 @@ app.post("/rooms/:roomId/history", (req, res) => {
             const room = realTime.ref(
               "rooms/" + rtdbRoomId + "/currentGame/history"
             );
+            //agrego una nueva entrada en el history de la realtime database
+            //para que avise a los usuarios que hay nueva data
             room.push(game).then(() => {
               room.get().then((data) => {
+                //despues hago un update con la data de todo el historial en la base de datos del room en firestore
                 roomsCollection
                   .doc(roomId)
                   .update({
@@ -348,7 +351,7 @@ app.post("/rooms/:roomId/history", (req, res) => {
       }
     });
 });
-
+//recupera todo el historial del room desde firestore
 app.get("/rooms/:roomId/history", (req, res) => {
   const { roomId } = req.params;
   const { userId } = req.query;

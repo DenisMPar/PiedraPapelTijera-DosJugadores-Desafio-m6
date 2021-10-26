@@ -1,20 +1,11 @@
-import { join } from "path/posix";
-import { callbackify } from "util";
 import { API_BASE_URL, rtdb } from "./front-database";
 import map from "lodash/map";
 import { Router } from "@vaadin/router";
 
-type Jugada = "piedra" | "papel" | "tijera" | "nada";
-type Game = {
-  playerOneMove: Jugada;
-  playerTwoMove: Jugada;
-};
+type Jugada = "piedra" | "papel" | "tijera";
+
 const state = {
   data: {
-    currentGame: {
-      myMove: "",
-      playerTwoMove: "",
-    },
     gameData: {},
     playerName: "",
     history: [],
@@ -55,7 +46,7 @@ const state = {
   },
 
   //calcula quien gano la partida.
-  //devuelve 0 si gano el jugador 2, 1 si gano el jugador 1 y 2 para empate
+  //devuelve "0" si gano el jugador 2, "1" si gano el jugador 1 y "2" para empate
 
   whoWins(myMove: Jugada, playerTwoMove: Jugada) {
     let winner = 0;
@@ -120,8 +111,8 @@ const state = {
         }
       });
   },
-  //crea un nuevo room y luego recupera el id largo de la misma
-  createAndJoinRoom(callback?) {
+  //crea un nuevo room y luego ejecuta joinRoom
+  createAndJoinRoom() {
     const currentState = state.getState();
 
     fetch(API_BASE_URL + "/rooms", {
@@ -216,14 +207,19 @@ const state = {
 
   setGameData(gameData) {
     const currentState = state.getState();
+    //mapeo los datos de game data
+    //game data puede tener: playerOne, playerTwo y history
     const gameDataMapped = map(gameData);
     for (const player of gameDataMapped) {
+      //si el userId coincide con el id del state es la data de playerOne
       if (player.userId == currentState.userId) {
         currentState.gameData.playerOne = player;
       }
+      //si el userId no coincide con el id del state es la data de playerTwo
       if (player.userId && player.userId != currentState.userId) {
         currentState.gameData.playerTwo = player;
       }
+      //si no existe un userId se trata del historial
       if (!player.userId) {
         currentState.history = player;
       }
