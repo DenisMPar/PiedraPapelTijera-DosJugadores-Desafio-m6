@@ -30,11 +30,8 @@ customElements.define(
         lastState.gameData.playerOne.playerMove &&
         lastState.gameData.playerTwo.playerMove
       ) {
-        console.log("seteando historial, jugadas");
         //el auxiliar check evita que se ejecute la funcion cuando no estoy en la pagina
         if (!this.check) {
-          console.log("seteando historial");
-
           //subo al historial las jugadas actuales
           state.setHistory(game);
           this.check = true;
@@ -62,8 +59,6 @@ customElements.define(
       }
     }
     render() {
-      console.log("render");
-
       const containerEl = document.createElement("div");
       containerEl.innerHTML = `
       <main class ="main">
@@ -91,19 +86,6 @@ customElements.define(
       const shadowHead = document.createElement("head");
       shadowHead.appendChild(linkEl);
 
-      // //Elimino los childrens del shadow cada vez que vuelvo a renderizar la pagina
-      // const childrens = this.shadow.children;
-      // console.log(childrens);
-
-      // if (childrens) {
-      //   console.log("childrenss");
-
-      //   for (const i of childrens) {
-      //     console.log("removing", i);
-
-      //     this.shadow.removeChild(i);
-      //   }
-      // }
       this.shadow.appendChild(shadowHead);
       this.shadow.appendChild(containerEl);
     }

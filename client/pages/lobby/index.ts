@@ -34,36 +34,23 @@ customElements.define(
       buttonEl.addEventListener("click", (e) => {
         e.preventDefault();
         this.check = true;
-        console.log("seteandoo");
 
         state.setPlayerReady(true);
 
         if (this.playerTwoReady) {
-          console.log("esta listoo");
-
           Router.go("/game");
         }
       });
     }
     //funcion que muestra la pantalla de espera cuando el otro jugador no ha apretado "jugar"
     getPlayerTwoName() {
-      console.log("getting");
-
       if (this.check) {
         if (this.gameData) {
-          console.log("hay data");
-
           if (this.gameData.playerTwo) {
-            console.log("hay player two");
-
             const playerTwoData = this.gameData.playerTwo;
             if (playerTwoData.playerName) {
-              console.log("hay nombre");
-
               this.playerTwoName = playerTwoData.playerName;
               if (this.gameData.playerOne.ready) {
-                console.log("entro");
-
                 const mainEl = this.shadow.querySelector(".main");
                 mainEl.innerHTML = `
                 <my-text type = "text" class="main__text">Esperando a que ${this.playerTwoName} presione jugar
@@ -81,8 +68,6 @@ customElements.define(
         if (this.gameData.playerTwo) {
           const playerTwoData = this.gameData.playerTwo;
           if (playerTwoData.ready) {
-            console.log("player two data:", playerTwoData);
-
             this.playerTwoReady = true;
             if (this.gameData.playerOne.ready) {
               Router.go("/game");
@@ -93,8 +78,6 @@ customElements.define(
     }
 
     render() {
-      console.log("render");
-
       const containerEl = document.createElement("div");
       containerEl.classList.add("page-container");
       containerEl.innerHTML = `

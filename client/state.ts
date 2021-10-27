@@ -27,7 +27,6 @@ const state = {
   },
   //setea un nuevo state
   setState(newState) {
-    console.log("soy el state he cambiado: ", newState);
     this.data = newState;
     //su hay un userID lo guardo en el local storage como state
     if (newState.userId) {
@@ -230,7 +229,6 @@ const state = {
   //setea en la database si un jugador esta listo para empezar el juego
   setPlayerReady(ready: boolean) {
     const currentState = state.getState();
-    console.log("player ready cambio");
 
     fetch(API_BASE_URL + "/rooms/" + currentState.roomId + "/ready", {
       method: "post",
@@ -247,7 +245,6 @@ const state = {
   //guarda la jugada del usuario en la database
   setPlayerMove(playerMove: Jugada) {
     const currentState = state.getState();
-    console.log("jugada:", playerMove);
 
     fetch(API_BASE_URL + "/rooms/" + currentState.roomId + "/move", {
       method: "post",
@@ -264,7 +261,6 @@ const state = {
   //resetea la jugada que hizo cada jugador
   resetGameData() {
     const currentState = state.getState();
-    console.log("reseteando");
 
     fetch(API_BASE_URL + "/rooms/" + currentState.roomId + "/reset", {
       method: "post",
