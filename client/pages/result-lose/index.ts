@@ -11,6 +11,11 @@ customElements.define(
     score;
     gameData;
     connectedCallback() {
+      const lastState = state.getState();
+      if (!lastState.roomId) {
+        state.init();
+        state.joinRoom(state.setPlayerOnline);
+      }
       this.shadow = this.attachShadow({ mode: "open" });
       this.render();
       this.showHistory();

@@ -11,13 +11,17 @@ customElements.define(
     gameData;
 
     connectedCallback() {
-      state.resetGameData();
+      const currentState = state.getState();
+      if (!currentState.roomId) {
+        state.init();
+        state.joinRoom(state.setPlayerOnline);
+      }
 
       this.check = false;
-      const currentState = state.getState();
       //pongo el auxiliar started en false para que se ejecuten las funciones del subscribe
       currentState.started = false;
       state.setState(currentState);
+      state.resetGameData();
 
       state.getHistory();
       this.checkPlayerReady();

@@ -28,13 +28,8 @@ const state = {
   //setea un nuevo state
   setState(newState) {
     this.data = newState;
-    //su hay un userID lo guardo en el local storage como state
-    if (newState.userId) {
-      const userId = {
-        userId: newState.userId,
-      };
-      localStorage.setItem("state", JSON.stringify(userId));
-    }
+
+    localStorage.setItem("state", JSON.stringify(newState));
 
     for (const cb of this.listeners) {
       cb();

@@ -14,10 +14,14 @@ customElements.define(
     };
     check: boolean = false;
     connectedCallback() {
+      const lastState = state.getState();
+      if (!lastState.roomId) {
+        state.init();
+        state.joinRoom(state.setPlayerOnline);
+      }
       this.shadow = this.attachShadow({ mode: "open" });
       this.render();
 
-      const lastState = state.getState();
       //creo un objeto con los nombres de los jugadores y la jugada que hicieron
       const game = {
         [lastState.gameData.playerOne.playerName]:
