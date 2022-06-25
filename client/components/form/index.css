@@ -43,4 +43,8 @@
   border: 10px solid #001997;
   border-radius: 10px;
   color: white;
+  cursor: pointer;
+}
+.button:hover {
+  background-color: #0092FC;
 }
