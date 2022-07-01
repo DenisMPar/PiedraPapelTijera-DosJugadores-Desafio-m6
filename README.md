@@ -1,6 +1,7 @@
 # PiedraPapelTijera
 WebApp para jugar a piedra, papel o tijera entre dos participantes conectados al servidor. Posee una API Rest que permite generar game rooms y se utilizo Firebase Realtime Database para mantener la comunicación entre jugadores.
 
+
 # Tecnologías Usadas
 - Typescript
 - Parcel
